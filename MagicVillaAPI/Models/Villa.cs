@@ -1,4 +1,6 @@
-﻿namespace MagicVillaAPI.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace MagicVillaAPI.Models
 {
     public class Villa
     {

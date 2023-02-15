@@ -1,6 +1,7 @@
 ﻿using MagicVillaAPI.Data;
 using MagicVillaAPI.Models;
 using MagicVillaAPI.Models.Dto;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MagicVillaAPI.Controllers
@@ -17,10 +18,10 @@ namespace MagicVillaAPI.Controllers
             return Ok(VillaStore.villaList);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:int}", Name = "GetVilla")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<VillaDTO> GetVilla(int id)
         {
             if (id == 0)
@@ -33,6 +34,49 @@ namespace MagicVillaAPI.Controllers
                 return NotFound();
             }
             return Ok(villa);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult<VillaDTO> CreateVilla([FromBody] VillaDTO villaDTO)
+        {
+            //--------------------------------------------------------------------------------------------
+            // We don't need this validation, because we have declare this controller as a APIController
+            // which takes the rules and validation from the DTO specification
+            //--------------------------------------------------------------------------------------------
+            //if (!ModelState.IsValid)
+            //{
+            //    return BadRequest(ModelState);
+            //}
+
+            //------------------------------
+            // This is a custom validation
+            //------------------------------
+            var villaExists = VillaStore.villaList.FirstOrDefault(v=>v.Name.ToLower() == villaDTO.Name.ToLower());
+            if (villaExists != null)
+            {
+                //---------------------------------------------------------------
+                // In this way, we are adding a custom error, to the ModelState
+                //---------------------------------------------------------------
+                ModelState.AddModelError("CustomError", "Villa's Name must be unique !!");
+                return BadRequest(ModelState);
+            }
+            if (villaDTO == null)
+            {
+                return BadRequest(villaDTO);
+            }
+            if (villaDTO.Id > 0)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            villaDTO.Id = VillaStore.villaList.OrderByDescending(v => v.Id).FirstOrDefault().Id + 1;
+            VillaStore.villaList.Add(villaDTO);
+            
+            //return Ok(villaDTO);
+            return CreatedAtRoute("GetVilla", new {id = villaDTO.Id },villaDTO);
         }
     }
 }
