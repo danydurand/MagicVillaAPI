@@ -1,6 +1,20 @@
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+//---------------------------------------------------------------------------
+// Here we are defining the file name to store de log information and the
+// rolling interval
+//---------------------------------------------------------------------------
+//Log.Logger = new LoggerConfiguration().MinimumLevel.Debug().
+//    WriteTo.File("log/villalogs.txt", rollingInterval:RollingInterval.Day).CreateLogger();
+
+//------------------------------------------------------------------------------------
+// With this line, we are asking the app to use Serilog instead the logger built-in 
+//------------------------------------------------------------------------------------
+//builder.Host.UseSerilog(); 
 
 builder.Services.AddControllers(option => {
     //option.ReturnHttpNotAcceptable = true;
